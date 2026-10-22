@@ -80,7 +80,7 @@ is_port_in_use() {
 }
 
 # ---------------- GitHub 仓库与下载（对齐 3x-ui resolve_latest_tag / checksum 机制） ----------------
-GITHUB_REPO="${GITHUB_REPO:-}"
+GITHUB_REPO="${GITHUB_REPO:-YSM1987/ysmERP}"
 GITHUB_TOKEN="${GITHUB_TOKEN:-}"
 if [ -z "$GITHUB_TOKEN" ] && [ -f /root/.ysmERP_deploy_token ]; then
     GITHUB_TOKEN=$(tr -d '[:space:]' < /root/.ysmERP_deploy_token)
@@ -116,8 +116,13 @@ resolve_latest_tag() {
 verify_release_checksum() {
     local url="$1" file="$2" sums="$2.sha256" code expected actual
     rm -f "${sums}"
-    code=$(curl -sL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60 \
-           -o "${sums}" -w '%{http_code}' -H "Authorization: Bearer ${GITHUB_TOKEN}" "${url}.sha256")
+    if [ -n "${GITHUB_TOKEN}" ]; then
+        code=$(curl -sL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60 \
+               -o "${sums}" -w '%{http_code}' -H "Authorization: Bearer ${GITHUB_TOKEN}" "${url}.sha256")
+    else
+        code=$(curl -sL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60 \
+               -o "${sums}" -w '%{http_code}' "${url}.sha256")
+    fi
     if [[ "${code}" == "404" ]]; then
         rm -f "${sums}"
         echo -e "${yellow}No checksum published for this release, skipping verification${plain}"
@@ -163,13 +168,39 @@ install_base() {
     echo -e "${green}Installing base packages...${plain}"
     case "${release}" in
         ubuntu | debian | armbian)
+            # Java17/MySQL8/Redis 依赖要求：Ubuntu 20.04+ / Debian 11+
+            local v
+            v=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
+            if { [ "${release}" = "ubuntu" ] && [ "${v}" -lt 20 ]; } || \
+               { [ "${release}" = "debian" ] && [ "${v}" -lt 11 ]; }; then
+                echo -e "${red}检测到 ${release} ${v}：本系统仓库缺少 Java 17 / MySQL 8 软件包。${plain}"
+                echo -e "${red}请使用 Ubuntu 20.04+（推荐 24.04）或 Debian 11+。${plain}"
+                exit 1
+            fi
             export DEBIAN_FRONTEND=noninteractive
             apt-get update -y
             apt-get install -y -q openjdk-17-jre-headless mysql-server redis-server nginx \
                 cron curl jq tar openssl ca-certificates
             ;;
+        centos | rocky | almalinux | rhel | ol)
+            local v
+            v=$(. /etc/os-release && echo "${VERSION_ID%%.*}")
+            if [ "${v}" -lt 8 ]; then
+                echo -e "${red}检测到 ${release} ${v}：CentOS 7 已 EOL 且无 Java 17 软件包，不受支持。${plain}"
+                echo -e "${red}请使用 Rocky / AlmaLinux / CentOS Stream 8+，或 Ubuntu 20.04+。${plain}"
+                exit 1
+            fi
+            dnf install -y -q java-17-openjdk-headless mysql-server redis nginx jq tar openssl \
+                crontabs curl || yum install -y -q java-17-openjdk-headless mysql-server redis nginx \
+                jq tar openssl crontabs curl
+            # el 系默认开启 SELinux，需放行 nginx 反代网络连接
+            if command -v getenforce > /dev/null 2>&1 && [ "$(getenforce 2> /dev/null)" != "Disabled" ]; then
+                setsebool -P httpd_can_network_connect 1 2> /dev/null || true
+            fi
+            systemctl enable --now mysqld 2> /dev/null || systemctl enable --now mysql 2> /dev/null || true
+            ;;
         *)
-            echo -e "${red}Unsupported OS: ${release}. 本脚本支持 Ubuntu / Debian（推荐 Ubuntu 24.04）。${plain}"
+            echo -e "${red}Unsupported OS: ${release}. 本脚本支持 Ubuntu 20.04+ / Debian 11+ / Rocky / AlmaLinux / CentOS Stream 8+。${plain}"
             exit 1
             ;;
     esac
@@ -196,15 +227,56 @@ ensure_swap() {
 DB_PASSWORD="${DB_PASSWORD:-$(gen_random_string 20)}"
 init_mysql() {
     echo -e "${green}Initializing MySQL...${plain}"
-    mysql --protocol=socket -uroot <<SQL
+    case "${release}" in
+        centos | rocky | almalinux | rhel | ol)
+            # el 系：root 有临时密码（/var/log/mysqld.log）且默认启用密码强度策略
+            local tmproot
+            tmproot=$(grep 'temporary password' /var/log/mysqld.log 2> /dev/null | tail -1 | awk '{print $NF}')
+            if [ -n "${tmproot}" ]; then
+                mysql -uroot -p"${tmproot}" --connect-expired-password <<SQL 2> /dev/null
+SET GLOBAL validate_password.policy = LOW;
+ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+            else
+                mysql --protocol=socket -uroot <<SQL
 CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 ALTER USER 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
 FLUSH PRIVILEGES;
 SQL
-    # 1GB 内存机 MySQL 低内存调优（不改任何业务数据结构）
-    cat > /etc/mysql/mysql.conf.d/zz-ysmERP-lowmem.cnf <<'CNF'
+            fi
+            # el 系 MySQL 低内存调优
+            cat > /etc/my.cnf.d/zz-ysmERP-lowmem.cnf <<'CNF'
+[mysqld]
+# ---- 低内存精简 ----
+innodb_buffer_pool_size = 128M
+performance_schema = OFF
+max_connections = 60
+table_open_cache = 200
+thread_cache_size = 16
+tmp_table_size = 16M
+max_heap_table_size = 16M
+innodb_log_buffer_size = 8M
+key_buffer_size = 8M
+skip-name-resolve = 1
+CNF
+            systemctl restart mysqld
+            ;;
+        *)
+            mysql --protocol=socket -uroot <<SQL
+CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+ALTER USER 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
+FLUSH PRIVILEGES;
+SQL
+            # 1GB 内存机 MySQL 低内存调优（不改任何业务数据结构）
+            cat > /etc/mysql/mysql.conf.d/zz-ysmERP-lowmem.cnf <<'CNF'
 [mysqld]
 # ---- 低内存精简（甲骨文 1GB 免费机）----
 innodb_buffer_pool_size = 128M
@@ -218,17 +290,28 @@ innodb_log_buffer_size = 8M
 key_buffer_size = 8M
 skip-name-resolve = 1
 CNF
-    systemctl restart mysql
+            systemctl restart mysql
+            ;;
+    esac
 }
 
 # ---------------- Redis 配置（仅本机 + 密码） ----------------
 REDIS_PASSWORD="${REDIS_PASSWORD:-$(gen_random_string 20)}"
 init_redis() {
     echo -e "${green}Configuring Redis...${plain}"
-    sed -i "s|^# *requirepass .*|requirepass ${REDIS_PASSWORD}|" /etc/redis/redis.conf
-    sed -i "s|^requirepass .*|requirepass ${REDIS_PASSWORD}|" /etc/redis/redis.conf
-    sed -i "s|^bind .*|bind 127.0.0.1 -::1|" /etc/redis/redis.conf
-    systemctl restart redis
+    local rconf rsvc
+    case "${release}" in
+        centos | rocky | almalinux | rhel | ol)
+            rconf=/etc/redis.conf; rsvc=redis
+            ;;
+        *)
+            rconf=/etc/redis/redis.conf; rsvc=redis-server
+            ;;
+    esac
+    sed -i "s|^# *requirepass .*|requirepass ${REDIS_PASSWORD}|" "${rconf}"
+    sed -i "s|^requirepass .*|requirepass ${REDIS_PASSWORD}|" "${rconf}"
+    sed -i "s|^bind .*|bind 127.0.0.1 -::1|" "${rconf}"
+    systemctl restart "${rsvc}"
 }
 
 # ---------------- 应用目录 / 配置 ----------------
@@ -414,11 +497,21 @@ setup_nginx() {
     fetch_support_file "nginx-ysmERP.conf" "${tmp_conf}" || {
         echo -e "${red}获取 nginx-ysmERP.conf 失败${plain}"; exit 1
     }
-    sed "s/__DOMAIN__/${DOMAIN}/g; s/__PORT__/${APP_PORT}/g; s/__WEB_PORT__/${WEB_PORT}/g; s#__ROOT__#${ysmERP_folder}#g" \
-        "${tmp_conf}" > /etc/nginx/sites-available/ysmERP
+    case "${release}" in
+        centos | rocky | almalinux | rhel | ol)
+            # el 系：conf.d 目录 + auto.conf include 机制
+            sed "s/__DOMAIN__/${DOMAIN}/g; s/__PORT__/${APP_PORT}/g; s/__WEB_PORT__/${WEB_PORT}/g; s#__ROOT__#${ysmERP_folder}#g" \
+                "${tmp_conf}" > /etc/nginx/conf.d/ysmERP.conf
+            ;;
+        *)
+            # Debian 系：sites-available + sites-enabled 机制
+            sed "s/__DOMAIN__/${DOMAIN}/g; s/__PORT__/${APP_PORT}/g; s/__WEB_PORT__/${WEB_PORT}/g; s#__ROOT__#${ysmERP_folder}#g" \
+                "${tmp_conf}" > /etc/nginx/sites-available/ysmERP
+            ln -sf /etc/nginx/sites-available/ysmERP /etc/nginx/sites-enabled/ysmERP
+            rm -f /etc/nginx/sites-enabled/default
+            ;;
+    esac
     rm -f "${tmp_conf}"
-    ln -sf /etc/nginx/sites-available/ysmERP /etc/nginx/sites-enabled/ysmERP
-    rm -f /etc/nginx/sites-enabled/default
     nginx -t
     systemctl reload nginx
 }
@@ -519,7 +612,8 @@ ask_inputs() {
     # ---- [1/4] GitHub 仓库 ----
     while true; do
         echo -e "${green}[1/4] GitHub 仓库${plain} —— 将从该仓库的 Release 下载安装产物"
-        read -rp "      请输入（例: yourname/ysmERP）: " GITHUB_REPO
+        read -rp "      请输入（回车默认 YSM1987/ysmERP）: " GITHUB_REPO
+        GITHUB_REPO="${GITHUB_REPO:-YSM1987/ysmERP}"
         if is_repo_format "${GITHUB_REPO}"; then break; fi
         echo -e "${red}      格式不正确，应形如 yourname/ysmERP，请重新输入${plain}"
     done
@@ -613,3 +707,12 @@ else
     echo -e " HTTPS      : 对外端口非 80，HTTP-01 验证不可用，需 DNS 验证（详见教程第 5 步说明）"
 fi
 echo -e "${green}======================================================================${plain}"
+echo ""
+echo -e "${green}部署验证（依次执行以下命令确认服务正常）：${plain}"
+echo -e "  1. ysmERP status                 # 服务应为 ${green}active (running)${plain}"
+echo -e "  2. curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${APP_PORT}/captchaImage"
+echo -e "     # 应输出 200（后端接口正常）"
+echo -e "  3. curl -s -o /dev/null -w '%{http_code}' ${SITE_URL}/captchaImage"
+echo -e "     # 应输出 200（Nginx 反代正常）；再在浏览器打开 ${SITE_URL} 应看到登录页"
+echo -e "  4. reboot 后再次执行 ysmERP status 可确认开机自启生效"
+echo -e "  异常排查: ysmERP log（应用日志）| journalctl -u ysmERP -n 50（系统日志）| nginx -t（站点配置）"

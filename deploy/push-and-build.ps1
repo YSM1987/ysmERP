@@ -10,7 +10,7 @@ $ErrorActionPreference = "Stop"
 $GH_USER    = "YSM1987"
 $REPO_NAME  = "ysmERP"
 $REPO_URL   = "https://github.com/$GH_USER/$REPO_NAME.git"
-$PROJECT_DIR= "d:\TraeWorkspace\01_qihangERP\ysmERP"
+$PROJECT_DIR= "d:\TraeWorkspace\03_ysmERP"
 
 Set-Location $PROJECT_DIR
 Write-Host "==> 项目目录: $PROJECT_DIR" -ForegroundColor Cyan

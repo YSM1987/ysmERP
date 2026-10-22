@@ -14,10 +14,10 @@ import cn.ysmerp.service.PddRefundService;
 import cn.ysmerp.service.OShopPullLasttimeService;
 import cn.ysmerp.service.OShopPullLogsService;
 
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.pdd.PddRefundApiHelper;
-import cn.ysmerp.open.pdd.model.AfterSale;
+import cn.qihangerp.open.pdd.PddRefundApiHelper;
+import cn.qihangerp.open.pdd.model.AfterSale;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;

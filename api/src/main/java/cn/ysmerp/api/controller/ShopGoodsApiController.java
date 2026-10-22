@@ -6,11 +6,11 @@
 //import cn.ysmerp.common.ResultVoEnum;
 //import cn.ysmerp.common.enums.EnumShopType;
 //import cn.ysmerp.model.entity.*;
-//import cn.ysmerp.open.wei.WeiGoodsApiService;
-//import cn.ysmerp.open.wei.WeiTokenApiHelper;
-//import cn.ysmerp.open.wei.model.Product;
-//import cn.ysmerp.open.xhs.response.GoodsItemInfo;
-//import cn.ysmerp.open.xhs.xhsGoodsApiService;
+//import cn.qihangerp.open.wei.WeiGoodsApiService;
+//import cn.qihangerp.open.wei.WeiTokenApiHelper;
+//import cn.qihangerp.open.wei.model.Product;
+//import cn.qihangerp.open.xhs.response.GoodsItemInfo;
+//import cn.qihangerp.open.xhs.xhsGoodsApiService;
 //import cn.ysmerp.security.common.BaseController;
 //import cn.ysmerp.service.*;
 //import com.alibaba.fastjson2.JSON;

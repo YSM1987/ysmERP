@@ -8,7 +8,7 @@ import cn.ysmerp.model.entity.OLogisticsCompany;
 import cn.ysmerp.model.entity.OShop;
 import cn.ysmerp.service.OLogisticsCompanyService;
 import cn.ysmerp.service.OShopService;
-import cn.ysmerp.open.wei.WeiLogisticsApiHelper;
+import cn.qihangerp.open.wei.WeiLogisticsApiHelper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.RequestMapping;

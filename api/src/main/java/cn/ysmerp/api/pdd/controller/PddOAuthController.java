@@ -8,10 +8,10 @@ import cn.ysmerp.enums.EnumShopType;
 import cn.ysmerp.model.entity.OShopPlatform;
 import cn.ysmerp.service.OShopPlatformService;
 import cn.ysmerp.service.OShopService;
-import cn.ysmerp.open.common.ApiResultVo;
-import cn.ysmerp.open.pdd.PddTokenApiHelper;
+import cn.qihangerp.open.common.ApiResultVo;
+import cn.qihangerp.open.pdd.PddTokenApiHelper;
 
-import cn.ysmerp.open.pdd.model.Token;
+import cn.qihangerp.open.pdd.model.Token;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

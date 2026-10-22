@@ -12,11 +12,11 @@ import cn.ysmerp.model.entity.OmsWeiOrderItem;
 import cn.ysmerp.service.OShopPullLogsService;
 import cn.ysmerp.service.OmsWeiOrderService;
 
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.wei.WeiOrderApiHelper;
-import cn.ysmerp.open.wei.model.Order;
-import cn.ysmerp.open.wei.model.OrderDetailDeliverInfoAddress;
+import cn.qihangerp.open.wei.WeiOrderApiHelper;
+import cn.qihangerp.open.wei.model.Order;
+import cn.qihangerp.open.wei.model.OrderDetailDeliverInfoAddress;
 import cn.ysmerp.security.common.BaseController;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;

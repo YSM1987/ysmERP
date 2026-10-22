@@ -10,10 +10,10 @@ import cn.ysmerp.enums.HttpStatus;
 import cn.ysmerp.model.entity.OmsWeiGoods;
 import cn.ysmerp.model.entity.OmsWeiGoodsSku;
 import cn.ysmerp.service.OmsWeiGoodsService;
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.wei.WeiGoodsApiService;
-import cn.ysmerp.open.wei.model.Product;
+import cn.qihangerp.open.wei.WeiGoodsApiService;
+import cn.qihangerp.open.wei.model.Product;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

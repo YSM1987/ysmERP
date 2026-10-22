@@ -15,12 +15,12 @@ import cn.ysmerp.service.DouRefundService;
 import cn.ysmerp.service.OShopPullLasttimeService;
 import cn.ysmerp.service.OShopPullLogsService;
 
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.dou.DouRefundApiHelper;
-import cn.ysmerp.open.dou.DouTokenApiHelper;
-import cn.ysmerp.open.dou.model.Token;
-import cn.ysmerp.open.dou.model.after.AfterSale;
+import cn.qihangerp.open.dou.DouRefundApiHelper;
+import cn.qihangerp.open.dou.DouTokenApiHelper;
+import cn.qihangerp.open.dou.model.Token;
+import cn.qihangerp.open.dou.model.after.AfterSale;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;

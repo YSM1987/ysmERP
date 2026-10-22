@@ -3,7 +3,7 @@ package cn.ysmerp.api.tao;
 
 import cn.ysmerp.model.entity.TaoOrder;
 import cn.ysmerp.model.entity.TaoOrderItem;
-import cn.ysmerp.open.tao.response.TaoOrderListResponse;
+import cn.qihangerp.open.tao.response.TaoOrderListResponse;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;

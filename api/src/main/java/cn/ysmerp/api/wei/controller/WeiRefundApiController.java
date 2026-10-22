@@ -9,10 +9,10 @@ import cn.ysmerp.enums.HttpStatus;
 import cn.ysmerp.model.entity.OmsWeiRefund;
 import cn.ysmerp.service.OmsWeiRefundService;
 
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.wei.WeiRefundApiHelper;
-import cn.ysmerp.open.wei.model.AfterSaleOrder;
+import cn.qihangerp.open.wei.WeiRefundApiHelper;
+import cn.qihangerp.open.wei.model.AfterSaleOrder;
 import cn.ysmerp.security.common.BaseController;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.AllArgsConstructor;

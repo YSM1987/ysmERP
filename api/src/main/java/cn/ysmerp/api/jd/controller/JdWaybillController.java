@@ -1,7 +1,7 @@
 package cn.ysmerp.api.jd.controller;
 
 import cn.ysmerp.common.AjaxResult;
-import cn.ysmerp.open.dou.DouRequest;
+import cn.qihangerp.open.dou.DouRequest;
 import cn.ysmerp.security.common.BaseController;
 import lombok.AllArgsConstructor;
 import lombok.extern.java.Log;

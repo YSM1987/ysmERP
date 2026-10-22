@@ -17,12 +17,12 @@ import cn.ysmerp.model.entity.TaoOrder;
 import cn.ysmerp.service.TaoOrderService;
 import cn.ysmerp.service.OShopPullLasttimeService;
 import cn.ysmerp.service.OShopPullLogsService;
-import cn.ysmerp.open.common.ApiResultVo;
+import cn.qihangerp.open.common.ApiResultVo;
 
-import cn.ysmerp.open.tao.TaoOrderApiHelper;
+import cn.qihangerp.open.tao.TaoOrderApiHelper;
 
-import cn.ysmerp.open.tao.response.TaoOrderDetailResponse;
-import cn.ysmerp.open.tao.response.TaoOrderListResponse;
+import cn.qihangerp.open.tao.response.TaoOrderDetailResponse;
+import cn.qihangerp.open.tao.response.TaoOrderListResponse;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

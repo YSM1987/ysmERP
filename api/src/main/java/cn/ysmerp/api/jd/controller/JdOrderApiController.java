@@ -17,10 +17,10 @@ import cn.ysmerp.service.JdOrderService;
 import cn.ysmerp.service.OShopPullLasttimeService;
 import cn.ysmerp.service.OShopPullLogsService;
 
-import cn.ysmerp.open.common.ApiResultVo;
-import cn.ysmerp.open.jd.JdOrderApiHelper;
-import cn.ysmerp.open.jd.response.JdOrderDetailResponse;
-import cn.ysmerp.open.jd.response.JdOrderListResponse;
+import cn.qihangerp.open.common.ApiResultVo;
+import cn.qihangerp.open.jd.JdOrderApiHelper;
+import cn.qihangerp.open.jd.response.JdOrderDetailResponse;
+import cn.qihangerp.open.jd.response.JdOrderListResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.RequestBody;

@@ -16,11 +16,11 @@ import cn.ysmerp.service.JdRefundService;
 import cn.ysmerp.service.OShopPullLasttimeService;
 import cn.ysmerp.service.OShopPullLogsService;
 
-import cn.ysmerp.open.common.ApiResultVo;
-import cn.ysmerp.open.jd.JdAfterSaleApiHelper;
+import cn.qihangerp.open.common.ApiResultVo;
+import cn.qihangerp.open.jd.JdAfterSaleApiHelper;
 
-import cn.ysmerp.open.jd.model.AfterSale;
-import cn.ysmerp.open.jd.model.Refund;
+import cn.qihangerp.open.jd.model.AfterSale;
+import cn.qihangerp.open.jd.model.Refund;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;

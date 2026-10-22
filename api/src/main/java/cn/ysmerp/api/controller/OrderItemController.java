@@ -1,0 +1,55 @@
+package cn.ysmerp.api.controller;
+
+import cn.ysmerp.api.request.OrderItemSpecIdUpdateBo;
+import cn.ysmerp.common.AjaxResult;
+import cn.ysmerp.common.PageQuery;
+import cn.ysmerp.common.TableDataInfo;
+import cn.ysmerp.model.bo.OrderItemListBo;
+import cn.ysmerp.service.OOrderItemService;
+import cn.ysmerp.service.OOrderService;
+import cn.ysmerp.security.common.BaseController;
+import lombok.AllArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+/**
+ * 店铺订单Controller
+ *
+ * @author ysmERP
+ * @date 2023-12-31
+ */
+@AllArgsConstructor
+@RestController
+@RequestMapping("/api/erp-api/order")
+public class OrderItemController extends BaseController
+{
+    private final OOrderItemService itemService;
+    private final OOrderService orderService;
+
+    /**
+     * 查询店铺订单列表
+     */
+    @GetMapping("/item_list")
+    public TableDataInfo list(OrderItemListBo bo, PageQuery pageQuery)
+    {
+        var pageList = itemService.selectPageVo(pageQuery,bo);
+        return getDataTable(pageList);
+    }
+
+    /**
+     * 修改订单明细specId
+     * @param bo
+     * @return
+     */
+    @PostMapping("/order_item_sku_id_update")
+    public AjaxResult orderItemSpecIdUpdate(@RequestBody OrderItemSpecIdUpdateBo bo)
+    {
+        if(bo.getOrderItemId()==null || bo.getOrderItemId() ==0) return AjaxResult.error("参数错误：orderItemId为空");
+        if(bo.getErpGoodsSpecId()==null || bo.getErpGoodsSpecId() ==0) return AjaxResult.error("参数错误：ErpGoodsSpecId为空");
+
+        var result = itemService.updateErpSkuId(bo.getOrderItemId(),bo.getErpGoodsSpecId());
+        if (result.getCode() == 0) {
+            return AjaxResult.success();
+        } else return AjaxResult.error(result.getMsg());
+
+    }
+}

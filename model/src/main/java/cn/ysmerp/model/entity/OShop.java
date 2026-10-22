@@ -1,0 +1,154 @@
+package cn.ysmerp.model.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * 数据中心-店铺
+ * @TableName sys_shop
+ */
+@Data
+public class OShop implements Serializable {
+    /**
+     * 主键
+     */
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+
+    /**
+     * 店铺名
+     */
+    private String name;
+
+    /**
+     * 对应第三方平台Id
+     */
+    private Integer type;
+
+    /**
+     * 店铺url
+     */
+    private String url;
+
+    /**
+     * 排序
+     */
+    private Integer sort;
+
+    /**
+     * 状态（1正常2已删除）
+     */
+    private String status;
+
+
+    /**
+     * 描述
+     */
+    private String remark;
+
+    /**
+     * 第三方平台店铺id，淘宝天猫开放平台使用
+     */
+    private String sellerId;
+    private String sellerNum;
+
+    /**
+     * 是否允许共享库存：0-否，1-是
+     */
+    private Integer allowInventoryShare;
+
+    /**
+     * Appkey
+     */
+    private String appKey;
+
+    /**
+     * Appsercet
+     */
+    private String appSecret;
+
+    /**
+     * 第三方平台sessionKey（access_token）
+     */
+    private String accessToken;
+
+    /**
+     * 到期
+     */
+    private Long expiresIn;
+
+    /**
+     * access_token开始时间
+     */
+    private Long accessTokenBegin;
+
+    /**
+     * 刷新token
+     */
+    private String refreshToken;
+
+    /**
+     * 刷新token过期时间
+     */
+    private Long refreshTokenTimeout;
+
+    /**
+     * 请求url
+     */
+    private String apiRequestUrl;
+    private String apiCallbackUrl;
+    /**
+     * api调用状态0未开启1已开启 11采用点三接口21采用吉客云接口
+     */
+    private Integer apiStatus;
+
+    private Long manageUserId;
+
+    private String province;
+    private String city;
+    private String district;
+    private String address;
+
+    private String contact;
+    private String phone;
+
+    /**
+     * 店铺分组
+     */
+    private Long shopGroupId;
+    private Long regionId;
+    private Long merchantId;
+    @TableField(exist = false)
+    private String merchantName;
+    /**
+     * 创建时间
+     */
+    private Date createTime;
+
+    /**
+     * 创建人
+     */
+    private String createBy;
+
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
+
+    /**
+     * 更新人
+     */
+    private String updateBy;
+
+    @TableField(exist = false)
+    private Integer verifyUser;
+
+    private static final long serialVersionUID = 1L;
+
+
+}

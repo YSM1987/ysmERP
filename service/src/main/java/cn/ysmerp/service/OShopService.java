@@ -1,0 +1,31 @@
+package cn.ysmerp.service;
+
+import cn.ysmerp.common.PageQuery;
+import cn.ysmerp.common.PageResult;
+import cn.ysmerp.enums.EnumShopType;
+import cn.ysmerp.model.entity.OShop;
+import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
+
+/**
+* @author qilip
+* @description 针对表【sys_shop(数据中心-店铺)】的数据库操作Service
+* @createDate 2024-03-17 15:17:34
+*/
+public interface OShopService extends IService<OShop> {
+    PageResult<OShop> queryPageList(OShop bo, PageQuery pageQuery);
+    List<OShop> selectShopList(OShop shop);
+    OShop selectShopById(Long id);
+    OShop selectShopBySellerId(String sellerId);
+    int updateShopById(OShop shop);
+    int insertShop(OShop shop);
+
+    int deleteShopByIds(Long[] ids);
+//    List<SysPlatform> selectShopPlatformList();
+//    SysPlatform selectShopPlatformById(Long id);
+//    int updateShopPlatformById(SysPlatform platform);
+    List<OShop> selectShopByShopType(EnumShopType shopType);
+    void updateSessionKey(Long shopId,String sessionKey);
+
+}

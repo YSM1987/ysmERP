@@ -1,0 +1,83 @@
+server:
+  port: 8086
+
+spring:
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+  profiles:
+    active: dev
+  application:
+    name: ysmERP
+  data:
+    # redis 配置
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      database: 0
+      # 密码
+      #    password: 123321
+      # 连接超时时间
+      timeout: 10s
+      lettuce:
+        pool:
+          # 连接池中的最小空闲连接
+          min-idle: 0
+          # 连接池中的最大空闲连接
+          max-idle: 8
+          # 连接池的最大数据库连接数
+          max-active: 8
+          # #连接池最大阻塞等待时间（使用负值表示没有限制）
+          max-wait: -1ms
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/ysmERP?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=true&serverTimezone=GMT%2B8
+    username: root
+    password: Andy_123
+    hikari:
+      maximum-pool-size: 10
+      min-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+ysmerp:
+  # 验证码类型 math 数字计算 char 字符验证
+  captchaType: math
+user:
+  password:
+    maxRetryCount: 5 #密码最大错误次数
+    lockTime: 10 #密码锁定时间（默认10分钟）
+
+mybatis-plus:
+  mapper-locations: classpath*:mapper/**/*Mapper.xml
+  type-aliases-package: cn.ysmerp.module.sys.domain;cn.ysmerp.domain;
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开启sql日志
+#mybatis:
+#  mapper-locations: classpath*:mappers/user/*.xml
+
+#spring:
+#  cloud:
+#    loadbalancer:
+#      nacos:
+#        enabled: true
+#    nacos:
+#      discovery:
+#        server-addr: 10.10.10.124:8848
+#        username: nacos
+#        password: nacos
+#      config:
+#        server-addr: 10.10.10.124:8848
+#        username: nacos
+#        password: nacos
+#
+#  config:
+#    import:
+#      - nacos:qumei-oms.yaml?refresh=true
+#  application:
+#    name: sys-api
+#server:
+#  port: 8082
+
+
+

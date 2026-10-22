@@ -1,0 +1,19 @@
+package cn.ysmerp.mapper;
+
+
+import cn.ysmerp.model.entity.DouRefund;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+/**
+* @author TW
+* @description 针对表【dou_refund(抖店退款表)】的数据库操作Mapper
+* @createDate 2024-06-06 16:48:38
+* @Entity cn.ysmerp.dou.domain.DouRefund
+*/
+public interface DouRefundMapper extends BaseMapper<DouRefund> {
+
+}
+
+
+
+

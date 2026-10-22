@@ -1,0 +1,100 @@
+name: Build and Release OMS
+
+# 触发方式：
+# 1) 打 tag（如 v3.0.1）自动构建并发布 Release
+# 2) 在 Actions 页面手动触发（workflow_dispatch）
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  backend:
+    name: Build Backend (Java 17)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Maven build
+        run: mvn -B clean package -DskipTests
+
+      - name: Package artifact
+        run: |
+          mkdir -p out
+          cp api/target/api-*.jar out/ysmERP.jar
+          cp docs/ysmERP.sql out/ysmERP.sql
+          tar -czf ysmERP-backend.tar.gz -C out .
+          sha256sum ysmERP-backend.tar.gz > ysmERP-backend.tar.gz.sha256
+          ls -lh ysmERP-backend.tar.gz*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ysmERP-backend
+          path: |
+            ysmERP-backend.tar.gz
+            ysmERP-backend.tar.gz.sha256
+
+  frontend:
+    name: Build Frontend (Vue2 / Node 16)
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: npm
+          cache-dependency-path: vue2/package-lock.json
+
+      - name: Install dependencies
+        working-directory: vue2
+        run: npm install --registry=https://registry.npmmirror.com
+
+      - name: Build production bundle
+        working-directory: vue2
+        run: npm run build:prod
+
+      - name: Package artifact
+        run: |
+          tar -czf ysmERP-frontend.tar.gz -C vue2/dist .
+          sha256sum ysmERP-frontend.tar.gz > ysmERP-frontend.tar.gz.sha256
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ysmERP-frontend
+          path: |
+            ysmERP-frontend.tar.gz
+            ysmERP-frontend.tar.gz.sha256
+
+  release:
+    name: Publish GitHub Release
+    needs: [backend, frontend]
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: 'ysmERP-*'
+          merge-multiple: true
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            ysmERP-backend.tar.gz
+            ysmERP-backend.tar.gz.sha256
+            ysmERP-frontend.tar.gz
+            ysmERP-frontend.tar.gz.sha256
+          body: |
+            ysmERP 自动构建产物：
+            - `ysmERP-backend.tar.gz`：后端可执行 jar（ysmERP.jar）+ 数据库初始化脚本
+            - `ysmERP-frontend.tar.gz`：前端静态文件（dist）
+            - 每个产物附带 `.sha256` 校验文件（install.sh / update.sh 自动校验）

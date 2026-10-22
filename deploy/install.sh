@@ -144,10 +144,9 @@ verify_release_checksum() {
     echo -e "${green}Checksum verified: ${actual}${plain}"
 }
 
-# 部署配套文件（管理脚本 / service / nginx 模板）：优先取本脚本同目录，缺失时回退 GitHub raw
+# 部署配套文件（管理脚本 / service / nginx 模板）：本地同目录 → GitHub raw → codeload 源码包三级回退
 fetch_support_file() { # fetch_support_file <name> <dest>
-    local name="$1" dest="$2" status
-    local script_dir
+    local name="$1" dest="$2" status script_dir tarball tmpdir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2> /dev/null && pwd || true)"
     if [[ -n "$script_dir" && -s "${script_dir}/${name}" ]]; then
         cp -f "${script_dir}/${name}" "${dest}"
@@ -160,6 +159,23 @@ fetch_support_file() { # fetch_support_file <name> <dest>
         gh_curl "https://raw.githubusercontent.com/${GITHUB_REPO}/master/deploy/${name}" "${dest}"
         return 0
     fi
+    # raw.githubusercontent.com 在部分云区域（如甲骨文新加坡）被阻断，回退 codeload.github.com（与 github.com 同域，Release 下载已验证可达）
+    tarball="/tmp/ysmERP-deploy-src.tar.gz"
+    if [[ ! -s "${tarball}" ]]; then
+        echo -e "${yellow}raw.githubusercontent.com 不可达，改从 codeload 源码包获取支持文件...${plain}"
+        curl -fsSL --retry 3 --connect-timeout 15 \
+             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+             "https://codeload.github.com/${GITHUB_REPO}/tar.gz/refs/heads/master" \
+             -o "${tarball}" || { rm -f "${tarball}"; return 1; }
+    fi
+    tmpdir=$(mktemp -d)
+    if tar -xzf "${tarball}" -C "${tmpdir}" --strip-components=2 \
+           "ysmERP-master/deploy/${name}" 2> /dev/null && [[ -s "${tmpdir}/${name}" ]]; then
+        cp -f "${tmpdir}/${name}" "${dest}"
+        rm -rf "${tmpdir}"
+        return 0
+    fi
+    rm -rf "${tmpdir}"
     return 1
 }
 
@@ -675,6 +691,7 @@ init_mysql
 init_redis
 write_config
 
+rm -f /tmp/ysmERP-deploy-src.tar.gz   # 清除 codeload 支持文件缓存，确保本次运行取最新
 TAG=$(resolve_latest_tag)
 [[ -n "$TAG" ]] || { echo -e "${red}无法获取最新版本（GitHub 不可达或仓库无 Release）${plain}"; exit 1; }
 echo -e "Latest release: ${TAG}"

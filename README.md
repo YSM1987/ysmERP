@@ -234,16 +234,56 @@ location /prod-api/ {
 
 | 项 | 要求 |
 |---|---|
-| 服务器系统 | Ubuntu 22.04 / 24.04（已适配甲骨文免费机 1C1G，自动创建 2G swap） |
-| 服务器权限 | root 或 sudo 免密 |
+| 服务器系统 | Ubuntu 20.04/22.04/24.04、Debian 11+、Rocky / AlmaLinux / CentOS Stream 8+（已适配甲骨文免费机 1C1G，自动创建 2G swap） |
+| 服务器权限 | root 或 sudo 免密（脚本自动提权） |
 | 网络 | 服务器可访问 GitHub（海外机直连即可） |
 | GitHub Release | 仓库已通过 tag（如 `v1.0.0`）触发 Actions 构建并发布产物 |
 | 本地（方式一需要） | Windows 自带 OpenSSH；仓库私有则需 `ghp_` 只读 PAT |
+| 云安全组 | 甲骨文云需在控制台「安全列表」放行对外端口 TCP 30545（系统内 iptables 由脚本自动处理） |
 | 可选 | 已解析到服务器 IP 的域名（无域名可用 IP 访问） |
 
 ### 7.2 部署命令
 
-**方式一：本地 Windows 一键部署（推荐，全程不进服务器）**
+**方式〇：SSH 终端一键直达（3x-ui 同款，推荐）**
+
+适用场景：拿到全新 Linux 服务器后，在 FinalShell / Xshell / Tabby 等 SSH 终端中**一条命令、零文件上传**完成全部部署（自动装依赖 → 配置服务 → 开机自启 → 输出访问信息）。
+
+注意事项：
+
+- 命令经管道执行，自动进入**全默认非交互模式**（仓库 `YSM1987/ysmERP`、IP 访问、对外端口 30545、后端端口 8086）；如需绑定域名请改用方式一/二
+- 仓库为私有（当前状态）必须带 `GITHUB_TOKEN`（[生成只读 token](https://github.com/settings/tokens)，classic 勾 `repo` 即可）；若仓库已设 Public 可用免 token 命令
+- 全程约 3-8 分钟（视网络），中途请勿断开 SSH
+
+私有仓库（复制后把两处 `ghp_xxx` 替换为你的 token）：
+
+```bash
+GITHUB_TOKEN=ghp_xxx bash <(curl -Ls -H "Authorization: Bearer ghp_xxx" https://raw.githubusercontent.com/YSM1987/ysmERP/master/deploy/install.sh)
+```
+
+Public 仓库（免 token，与 3x-ui 体验一致）：
+
+```bash
+bash <(curl -Ls https://raw.githubusercontent.com/YSM1987/ysmERP/master/deploy/install.sh)
+```
+
+预期输出（安装结束自动打印）：
+
+```
+======================================================================
+ 安装完成！
+ 访问地址   : http://服务器IP:30545
+ 默认账号   : admin / Andy@2025（登录后请立即修改密码）
+ MySQL 密码 : 已写入 /etc/ysmERP/application.yml 与 install-result.env
+ Redis 密码 : 已写入 /etc/ysmERP/application.yml
+ 安装版本   : v1.0.x
+ 管理命令   : ysmERP（start/stop/restart/status/log/update/uninstall/settings）
+ 后续更新   : ysmERP update
+======================================================================
+部署验证（依次执行以下命令确认服务正常）：
+  ...
+```
+
+**方式一：本地 Windows 一键部署（全程不进服务器，支持绑定域名）**
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\deploy\one-key-deploy.ps1 `
@@ -276,6 +316,23 @@ bash install.sh
 **方式四：甲骨文实例开机自动部署（cloud-init）** —— 创建实例时在「高级选项 → 用户数据」粘贴 `deploy/cloud-init/cloud-init.yaml`（先改文件头部仓库/域名/Token 三项），开机即完成全部部署。
 
 **安装完成后**：访问 `http://服务器IP:30545`（默认账号 `admin / Andy@2025`，登录后立即改密）；密码与配置见 `/etc/ysmERP/application.yml`；服务器端管理命令 `ysmERP`（start/stop/restart/status/log/update/uninstall）。**重复执行 install.sh 或运行 `ysmERP update` 即为更新到最新 Release。**
+
+**部署验证**（SSH 终端依次执行，确认服务正常启动运行）：
+
+```bash
+# 1. 服务状态 —— 应显示 active (running)
+ysmERP status
+
+# 2. 后端接口 —— 应输出 200
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8086/captchaImage
+
+# 3. Nginx 反代 —— 应输出 200；浏览器打开 http://服务器IP:30545 应看到登录页
+curl -s -o /dev/null -w '%{http_code}\n' http://服务器IP:30545/captchaImage
+
+# 4. 开机自启 —— reboot 后再次执行 ysmERP status 仍为 active 即生效
+```
+
+异常排查：`ysmERP log`（应用日志）、`journalctl -u ysmERP -n 50`（系统日志）、`nginx -t`（站点配置），更多见下方 7.3。
 
 ### 7.3 常见问题排查
 

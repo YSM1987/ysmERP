@@ -121,14 +121,13 @@ export function filterDynamicRoutes(routes) {
   return res
 }
 
-// 菜单 component 字段形如 goods/index 或 shipping/ewaybillPrint/index1.vue。
+// 菜单 component 字段形如 goods/index、shop/merchant（缺 index）或 shipping/ewaybillAccount/（带尾斜杠）。
 // 不能用 import(`@/views/${view}`)：在本项目的 babel/webpack 组合下，
 // 构建产物里的动态上下文是空的（keys() 返回 []），任何路径都报 Cannot find module，
 // 导致所有菜单页面打不开。改用显式 require.context 生成可靠的文件映射。
 const viewContext = require.context('../../views', true, /\.vue$/)
 
-// 个别菜单 component 指向不存在的文件（如 shop/merchant、shipping/ewaybillAccount/），
-// 直接取模块会抛错并中断整个 GenerateRoutes，表现为路由表为空、侧边栏空白、登录卡住。
+// 取不到模块会抛错并中断整个 GenerateRoutes，表现为路由表为空、侧边栏空白、登录卡住。
 // 这里做容错：找不到文件时返回占位组件，保证其余菜单不受影响。
 const createMissingView = (view) => ({
   name: 'MissingView',
@@ -139,12 +138,17 @@ const createMissingView = (view) => ({
 
 export const loadView = (view) => {
   const normalized = view.replace(/\/+$/, '')
-  const path = normalized.endsWith('.vue') ? `./${normalized}` : `./${normalized}.vue`
-  if (viewContext.keys().indexOf(path) === -1) {
+  // 兼容两种写法：指向具体文件（goods/index）或指向目录（shop/merchant、shipping/ewaybillAccount/）
+  const candidates = normalized.endsWith('.vue')
+    ? [`./${normalized}`]
+    : [`./${normalized}.vue`, `./${normalized}/index.vue`]
+  const keys = viewContext.keys()
+  const key = candidates.find((item) => keys.indexOf(item) !== -1)
+  if (!key) {
     console.warn('[router] 菜单组件文件不存在:', view)
     return createMissingView(view)
   }
-  const module = viewContext(path)
+  const module = viewContext(key)
   return module.default || module
 }
 

@@ -258,6 +258,9 @@ ALTER USER 'root'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
+CREATE USER IF NOT EXISTS 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+ALTER USER 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
             else
@@ -266,6 +269,9 @@ CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE u
 CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 ALTER USER 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
+CREATE USER IF NOT EXISTS 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+ALTER USER 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
             fi
@@ -292,6 +298,9 @@ CREATE DATABASE IF NOT EXISTS \`ysmERP\` DEFAULT CHARACTER SET utf8mb4 COLLATE u
 CREATE USER IF NOT EXISTS 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 ALTER USER 'ysmERP'@'localhost' IDENTIFIED BY '${DB_PASSWORD}';
 GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'localhost';
+CREATE USER IF NOT EXISTS 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+ALTER USER 'ysmERP'@'127.0.0.1' IDENTIFIED BY '${DB_PASSWORD}';
+GRANT ALL PRIVILEGES ON \`ysmERP\`.* TO 'ysmERP'@'127.0.0.1';
 FLUSH PRIVILEGES;
 SQL
             # 1GB 内存机 MySQL 低内存调优（不改任何业务数据结构）
@@ -373,7 +382,7 @@ spring:
           max-wait: -1ms
   datasource:
     driverClassName: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ysmERP?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
+    url: jdbc:mysql://127.0.0.1:3306/ysmERP?useUnicode=true&characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=GMT%2B8
     username: ysmERP
     password: ${DB_PASSWORD}
     hikari:

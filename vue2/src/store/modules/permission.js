@@ -121,13 +121,13 @@ export function filterDynamicRoutes(routes) {
   return res
 }
 
+// 菜单 component 字段形如 goods/index 或 shipping/ewaybillPrint/index1.vue。
+// 必须使用相对路径且带上 .vue 后缀：原先的 import(`@/views/${view}`) 生成的分包上下文
+// 会以别名全路径 '@/views/xxx'（且无扩展名）去查表，与表内 './xxx.vue' 的键不匹配，
+// 导致所有动态路由组件报 Cannot find module，菜单点击后页面不切换。
 export const loadView = (view) => {
-  if (process.env.NODE_ENV === 'development') {
-    return (resolve) => require([`@/views/${view}`], resolve)
-  } else {
-    // 使用 import 实现生产环境的路由懒加载
-    return () => import(`@/views/${view}`)
-  }
+  const path = view.endsWith('.vue') ? view : `${view}.vue`
+  return () => import(`../../views/${path}`)
 }
 
 export default permission

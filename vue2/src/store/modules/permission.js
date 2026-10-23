@@ -122,12 +122,15 @@ export function filterDynamicRoutes(routes) {
 }
 
 // 菜单 component 字段形如 goods/index 或 shipping/ewaybillPrint/index1.vue。
-// 必须使用相对路径且带上 .vue 后缀：原先的 import(`@/views/${view}`) 生成的分包上下文
-// 会以别名全路径 '@/views/xxx'（且无扩展名）去查表，与表内 './xxx.vue' 的键不匹配，
-// 导致所有动态路由组件报 Cannot find module，菜单点击后页面不切换。
+// 不能用 import(`@/views/${view}`)：在本项目的 babel/webpack 组合下，
+// 构建产物里的动态上下文是空的（keys() 返回 []），任何路径都报 Cannot find module，
+// 导致所有菜单页面打不开。改用显式 require.context 生成可靠的文件映射。
+const viewContext = require.context('../../views', true, /\.vue$/)
+
 export const loadView = (view) => {
-  const path = view.endsWith('.vue') ? view : `${view}.vue`
-  return () => import(`../../views/${path}`)
+  const path = view.endsWith('.vue') ? `./${view}` : `./${view}.vue`
+  const module = viewContext(path)
+  return module.default || module
 }
 
 export default permission

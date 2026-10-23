@@ -65,8 +65,9 @@ resolve_latest_tag() {
 verify_release_checksum() {
     local url="$1" file="$2" sums="$2.sha256" code expected actual
     rm -f "${sums}"
-    code=$(curl -sL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60 \
-           -o "${sums}" -w '%{http_code}' -H "Authorization: Bearer ${GITHUB_TOKEN}" "${url}.sha256")
+    local cargs=(-sL --retry 3 --retry-delay 3 --connect-timeout 15 --max-time 60)
+    [ -n "${GITHUB_TOKEN}" ] && cargs+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+    code=$(curl "${cargs[@]}" -o "${sums}" -w '%{http_code}' "${url}.sha256")
     if [[ "${code}" == "404" ]]; then
         rm -f "${sums}"
         echo -e "${yellow}No checksum published for this release, skipping verification${plain}"
@@ -158,7 +159,7 @@ echo "==> [5/5] 重启服务并健康检查"
 systemctl restart ysmERP
 nginx -t 2> /dev/null && systemctl reload nginx 2> /dev/null || true
 
-for i in $(seq 1 30); do
+for i in $(seq 1 90); do
     if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/captchaImage"; then
         # 更新 install-result.env 中的版本号
         if [ -f "${ysmERP_conf}/install-result.env" ]; then
@@ -169,6 +170,6 @@ for i in $(seq 1 30); do
     fi
     sleep 2
 done
-echo -e "${red}⚠️ 后端 60 秒内未响应。回滚方法: 把 ${ysmERP_folder}/backup/ 最新 jar 复制为 ${ysmERP_folder}/ysmERP.jar 后 systemctl restart ysmERP${plain}"
+echo -e "${red}⚠️ 后端 180 秒内未响应。回滚方法: 把 ${ysmERP_folder}/backup/ 最新 jar 复制为 ${ysmERP_folder}/ysmERP.jar 后 systemctl restart ysmERP${plain}"
 echo -e "${red}   查看日志: journalctl -u ysmERP -n 100${plain}"
 exit 1

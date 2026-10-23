@@ -16,7 +16,7 @@ WorkingDirectory=/usr/local/ysmERP
 # ${JAVA_OPTS} 来自 /etc/default/ysmERP：
 # -Xms128m -Xmx512m -Xss512k 小堆+小栈、SerialGC（1核机最优吞吐/内存比）、
 # 元空间上限 160M、GC 日志轮转、禁用随机数阻塞
-ExecStart=/usr/bin/java ${JAVA_OPTS} -jar /usr/local/ysmERP/ysmERP.jar
+ExecStart=/usr/bin/java ${JAVA_OPTS} -jar /usr/local/ysmERP/ysmERP.jar --spring.config.additional-location=file:/etc/ysmERP/application.yml
 Restart=on-failure
 RestartSec=5s
 

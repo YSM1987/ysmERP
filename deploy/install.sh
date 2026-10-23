@@ -66,17 +66,20 @@ export NONINTERACTIVE
 
 gen_random_string() {
     local length="$1"
-    openssl rand -base64 $((length * 2)) | tr -dc 'a-zA-Z0-9' | head -c "$length"
+    # head 提前关闭管道会让上游收到 SIGPIPE，pipefail 下会变成非零退出并触发 set -e
+    { openssl rand -base64 $((length * 2)) 2> /dev/null | tr -dc 'a-zA-Z0-9' | head -c "$length"; } || true
 }
 
 is_port_in_use() {
-    local port="$1"
+    local port="$1" out=""
     if command -v ss > /dev/null 2>&1; then
-        ss -ltn 2> /dev/null | awk -v p=":${port}$" '$4 ~ p {exit 0} END {exit 1}'
-        return
+        out=$(ss -ltn 2> /dev/null || true)
+    elif command -v netstat > /dev/null 2>&1; then
+        out=$(netstat -lnt 2> /dev/null || true)
+    else
+        return 1
     fi
-    command -v netstat > /dev/null 2>&1 && netstat -lnt 2> /dev/null | awk -v p=":${port} " '$4 ~ p {exit 0} END {exit 1}'
-    return 1
+    awk -v p=":${port}$" '$4 ~ p {found=1} END {exit found ? 0 : 1}' <<< "$out"
 }
 
 # ---------------- GitHub 仓库与下载（对齐 3x-ui resolve_latest_tag / checksum 机制） ----------------
@@ -146,25 +149,25 @@ verify_release_checksum() {
 
 # 部署配套文件（管理脚本 / service / nginx 模板）：本地同目录 → GitHub raw → codeload 源码包三级回退
 fetch_support_file() { # fetch_support_file <name> <dest>
-    local name="$1" dest="$2" status script_dir tarball tmpdir
+    local name="$1" dest="$2" script_dir tarball tmpdir
     script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" 2> /dev/null && pwd || true)"
     if [[ -n "$script_dir" && -s "${script_dir}/${name}" ]]; then
         cp -f "${script_dir}/${name}" "${dest}"
         return 0
     fi
-    status=$(curl -sIL --retry 3 --connect-timeout 15 -o /dev/null -w '%{http_code}' \
-             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-             "https://raw.githubusercontent.com/${GITHUB_REPO}/master/deploy/${name}")
-    if [[ "${status}" == "200" ]]; then
-        gh_curl "https://raw.githubusercontent.com/${GITHUB_REPO}/master/deploy/${name}" "${dest}"
+    # raw 直连下载：走 gh_curl（无 token 时不会发送空的 Authorization 头——
+    # 空的 Bearer 会被 GitHub 视为无效认证并返回 404，导致公开仓库也判定为不可达）
+    if gh_curl "https://raw.githubusercontent.com/${GITHUB_REPO}/master/deploy/${name}" "${dest}" \
+        && [ -s "${dest}" ]; then
         return 0
     fi
     # raw.githubusercontent.com 在部分云区域（如甲骨文新加坡）被阻断，回退 codeload.github.com（与 github.com 同域，Release 下载已验证可达）
     tarball="/tmp/ysmERP-deploy-src.tar.gz"
     if [[ ! -s "${tarball}" ]]; then
         echo -e "${yellow}raw.githubusercontent.com 不可达，改从 codeload 源码包获取支持文件...${plain}"
-        curl -fsSL --retry 3 --connect-timeout 15 \
-             -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+        local cargs=(-fsSL --retry 3 --connect-timeout 15)
+        [ -n "${GITHUB_TOKEN}" ] && cargs+=(-H "Authorization: Bearer ${GITHUB_TOKEN}")
+        curl "${cargs[@]}" \
              "https://codeload.github.com/${GITHUB_REPO}/tar.gz/refs/heads/master" \
              -o "${tarball}" || { rm -f "${tarball}"; return 1; }
     fi
@@ -564,14 +567,15 @@ setup_firewall() {
 wait_healthy() {
     echo -e "${green}Waiting for backend...${plain}"
     local i
-    for i in $(seq 1 30); do
+    # 1C1G 机器首次启动 Spring Boot 可能需要 1-2 分钟，给足 180s
+    for i in $(seq 1 90); do
         if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/captchaImage"; then
             echo -e "${green}Backend is ready.${plain}"
             return 0
         fi
         sleep 2
     done
-    echo -e "${red}Backend did not respond in 60s. Check: journalctl -u ysmERP -n 100${plain}"
+    echo -e "${red}Backend did not respond in 180s. Check: journalctl -u ysmERP -n 100${plain}"
     return 1
 }
 

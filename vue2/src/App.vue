@@ -59,6 +59,10 @@ export default {
     },
     // 初始化 SSE 连接
     initSSE() {
+      // 后端未提供 SSE 端点，默认关闭；待后端补齐后通过 VUE_APP_SSE_ENABLED=true 开启
+      if (process.env.VUE_APP_SSE_ENABLED !== 'true') {
+        return;
+      }
       // 确保有 Client ID
       if (!this.clientId) {
         this.clientId = this.generateOrGetClientId();

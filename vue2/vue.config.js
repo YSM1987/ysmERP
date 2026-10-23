@@ -41,6 +41,11 @@ module.exports = {
   },
   css: {
     loaderOptions: {
+      // vue-cli 5 默认不再为普通样式开启 CSS Modules，需显式开启 ICSS，
+      // 否则 scss 里的 :export 不会编译成 JS 导出，JS 中 import variables 会得到 undefined
+      css: {
+        modules: { mode: 'icss' }
+      },
       sass: {
         sassOptions: { outputStyle: "expanded" }
       }

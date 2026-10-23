@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # =====================================================================
 # ysmERP —— 从 GitHub Release 更新到指定/最新版本（对齐 3x-ui update.sh）
 # 用法（root 执行）：
@@ -160,7 +160,7 @@ systemctl restart ysmERP
 nginx -t 2> /dev/null && systemctl reload nginx 2> /dev/null || true
 
 for i in $(seq 1 90); do
-    if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/captchaImage"; then
+    if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
         # 更新 install-result.env 中的版本号
         if [ -f "${ysmERP_conf}/install-result.env" ]; then
             sed -i "s|^VERSION=.*|VERSION=${TAG_VERSION}|" "${ysmERP_conf}/install-result.env"

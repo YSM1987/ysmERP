@@ -1,4 +1,4 @@
-# ysmERP电商OMS系统3.0版
+﻿# ysmERP电商OMS系统3.0版
 > **欢迎来到我们的开源项目！创新、协作、高质量的代码。您的Star🌟，是我们前进的动力！ 💪✨🏆**
 
 > **项目持续更新中，还有很多不足，请多包含！如有任何疑问请提交issue！谢谢！ 💪✨🏆**
@@ -324,10 +324,10 @@ bash install.sh
 ysmERP status
 
 # 2. 后端接口 —— 应输出 200
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8086/captchaImage
+curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:8086/api/sys-api/captchaImage
 
 # 3. Nginx 反代 —— 应输出 200；浏览器打开 http://服务器IP:30545 应看到登录页
-curl -s -o /dev/null -w '%{http_code}\n' http://服务器IP:30545/captchaImage
+curl -s -o /dev/null -w '%{http_code}\n' http://服务器IP:30545/prod-api/api/sys-api/captchaImage
 
 # 4. 开机自启 —— reboot 后再次执行 ysmERP status 仍为 active 即生效
 ```

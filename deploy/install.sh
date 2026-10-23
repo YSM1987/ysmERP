@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+﻿#!/usr/bin/env bash
 # =====================================================================
 # ysmERP —— 一键安装脚本（部署体系对齐 3x-ui 项目实现方案）
 #
@@ -578,7 +578,7 @@ wait_healthy() {
     local i
     # 1C1G 机器首次启动 Spring Boot 可能需要 1-2 分钟，给足 180s
     for i in $(seq 1 90); do
-        if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/captchaImage"; then
+        if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
             echo -e "${green}Backend is ready.${plain}"
             return 0
         fi
@@ -740,9 +740,9 @@ echo -e "${green}===============================================================
 echo ""
 echo -e "${green}部署验证（依次执行以下命令确认服务正常）：${plain}"
 echo -e "  1. ysmERP status                 # 服务应为 ${green}active (running)${plain}"
-echo -e "  2. curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${APP_PORT}/captchaImage"
+echo -e "  2. curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"
 echo -e "     # 应输出 200（后端接口正常）"
-echo -e "  3. curl -s -o /dev/null -w '%{http_code}' ${SITE_URL}/captchaImage"
+echo -e "  3. curl -s -o /dev/null -w '%{http_code}' ${SITE_URL}/prod-api/api/sys-api/captchaImage"
 echo -e "     # 应输出 200（Nginx 反代正常）；再在浏览器打开 ${SITE_URL} 应看到登录页"
 echo -e "  4. reboot 后再次执行 ysmERP status 可确认开机自启生效"
 echo -e "  异常排查: ysmERP log（应用日志）| journalctl -u ysmERP -n 50（系统日志）| nginx -t（站点配置）"

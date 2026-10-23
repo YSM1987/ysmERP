@@ -1,4 +1,4 @@
-# =====================================================================
+﻿# =====================================================================
 # ysmERP —— 一键部署脚本（本地 Windows 直达服务器部署完成）
 # 前置条件：
 #   1. 已按教程完成：Fork 仓库 + push-and-build.ps1 触发构建，Release 已发布
@@ -111,7 +111,7 @@ else {
 
 # ---------- [4/4] 验证 ----------
 Write-Host "==> [4/4] 远程健康检查" -ForegroundColor Cyan
-$health = ssh @sshBase $SshTarget "curl -fs -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:$AppPort/captchaImage 2>/dev/null || echo FAIL"
+$health = ssh @sshBase $SshTarget "curl -fs -o /dev/null -w '%{http_code}' --max-time 5 http://127.0.0.1:$AppPort/api/sys-api/captchaImage 2>/dev/null || echo FAIL"
 if ($health -eq "200") {
     OK "    后端健康检查: 200 OK"
 } else {

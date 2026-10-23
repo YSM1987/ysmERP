@@ -127,8 +127,23 @@ export function filterDynamicRoutes(routes) {
 // 导致所有菜单页面打不开。改用显式 require.context 生成可靠的文件映射。
 const viewContext = require.context('../../views', true, /\.vue$/)
 
+// 个别菜单 component 指向不存在的文件（如 shop/merchant、shipping/ewaybillAccount/），
+// 直接取模块会抛错并中断整个 GenerateRoutes，表现为路由表为空、侧边栏空白、登录卡住。
+// 这里做容错：找不到文件时返回占位组件，保证其余菜单不受影响。
+const createMissingView = (view) => ({
+  name: 'MissingView',
+  render(h) {
+    return h('div', { style: 'padding: 24px; color: #F56C6C' }, `页面组件未找到：${view}`)
+  }
+})
+
 export const loadView = (view) => {
-  const path = view.endsWith('.vue') ? `./${view}` : `./${view}.vue`
+  const normalized = view.replace(/\/+$/, '')
+  const path = normalized.endsWith('.vue') ? `./${normalized}` : `./${normalized}.vue`
+  if (viewContext.keys().indexOf(path) === -1) {
+    console.warn('[router] 菜单组件文件不存在:', view)
+    return createMissingView(view)
+  }
   const module = viewContext(path)
   return module.default || module
 }

@@ -41,6 +41,8 @@ spring:
       idle-timeout: 600000
       max-lifetime: 1800000
 ysmerp:
+  # 是否开启获取IP归属地（依赖外网 whois.pconline.com.cn，服务器出网受限时保持 false，避免登录变慢）
+  addressEnabled: false
   # 验证码类型 math 数字计算 char 字符验证
   captchaType: math
 user:

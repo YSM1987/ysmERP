@@ -1,6 +1,7 @@
 package cn.ysmerp.security;
 
 import cn.ysmerp.common.config.RedisCache;
+import cn.ysmerp.common.config.YsmErpConfig;
 import cn.ysmerp.common.constant.CacheConstants;
 import cn.ysmerp.common.utils.IdUtils;
 import cn.ysmerp.common.utils.StringUtils;
@@ -159,7 +160,10 @@ public class TokenService
         UserAgent userAgent = UserAgent.parseUserAgentString(ServletUtils.getRequest().getHeader("User-Agent"));
         String ip = IpUtils.getIpAddr();
         loginUser.setIpaddr(ip);
-        loginUser.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
+        if (YsmErpConfig.isAddressEnabled())
+        {
+            loginUser.setLoginLocation(AddressUtils.getRealAddressByIP(ip));
+        }
         loginUser.setBrowser(userAgent.getBrowser().getName());
         loginUser.setOs(userAgent.getOperatingSystem().getName());
     }

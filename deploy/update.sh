@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # =====================================================================
 # ysmERP —— 从 GitHub Release 更新到指定/最新版本（对齐 3x-ui update.sh）
 # 用法（root 执行）：
@@ -159,8 +159,9 @@ echo "==> [5/5] 重启服务并健康检查"
 systemctl restart ysmERP
 nginx -t 2> /dev/null && systemctl reload nginx 2> /dev/null || true
 
-for i in $(seq 1 90); do
-    if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
+for i in $(seq 1 120); do
+    # 首个请求含连接池/Redis 预热，可能超过 3s，超时给到 10s
+    if curl -fs -o /dev/null --max-time 10 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
         # 更新 install-result.env 中的版本号
         if [ -f "${ysmERP_conf}/install-result.env" ]; then
             sed -i "s|^VERSION=.*|VERSION=${TAG_VERSION}|" "${ysmERP_conf}/install-result.env"
@@ -170,6 +171,6 @@ for i in $(seq 1 90); do
     fi
     sleep 2
 done
-echo -e "${red}⚠️ 后端 180 秒内未响应。回滚方法: 把 ${ysmERP_folder}/backup/ 最新 jar 复制为 ${ysmERP_folder}/ysmERP.jar 后 systemctl restart ysmERP${plain}"
+echo -e "${red}⚠️ 后端 240 秒内未响应。回滚方法: 把 ${ysmERP_folder}/backup/ 最新 jar 复制为 ${ysmERP_folder}/ysmERP.jar 后 systemctl restart ysmERP${plain}"
 echo -e "${red}   查看日志: journalctl -u ysmERP -n 100${plain}"
 exit 1

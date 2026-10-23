@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # =====================================================================
 # ysmERP —— 一键安装脚本（部署体系对齐 3x-ui 项目实现方案）
 #
@@ -576,15 +576,15 @@ setup_firewall() {
 wait_healthy() {
     echo -e "${green}Waiting for backend...${plain}"
     local i
-    # 1C1G 机器首次启动 Spring Boot 可能需要 1-2 分钟，给足 180s
-    for i in $(seq 1 90); do
-        if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
+    # 1C1G 机器首次启动 Spring Boot 可能需要 1-2 分钟；首个请求含连接池/Redis 预热，可能超过 3s
+    for i in $(seq 1 120); do
+        if curl -fs -o /dev/null --max-time 10 "http://127.0.0.1:${APP_PORT}/api/sys-api/captchaImage"; then
             echo -e "${green}Backend is ready.${plain}"
             return 0
         fi
         sleep 2
     done
-    echo -e "${red}Backend did not respond in 180s. Check: journalctl -u ysmERP -n 100${plain}"
+    echo -e "${red}Backend did not respond in 240s. Check: journalctl -u ysmERP -n 100${plain}"
     return 1
 }
 

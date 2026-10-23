@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env bash
+#!/usr/bin/env bash
 # =====================================================================
 # ysmERP 管理脚本（对齐 3x-ui x-ui.sh：子命令 + 交互菜单）
 # 安装位置: /usr/local/ysmERP/ysmERP.sh，软链 /usr/bin/ysmERP
@@ -61,7 +61,7 @@ status() {
     df -h / | awk 'NR==1||/^\/dev/'
     local port
     port=$(conf_get APP_PORT); port=${port:-8086}
-    if curl -fs -o /dev/null --max-time 3 "http://127.0.0.1:${port}/api/sys-api/captchaImage"; then
+    if curl -fs -o /dev/null --max-time 10 "http://127.0.0.1:${port}/api/sys-api/captchaImage"; then
         LOGI "后端健康检查: OK (127.0.0.1:${port}/api/sys-api/captchaImage)"
     else
         LOGE "后端健康检查: FAILED —— journalctl -u ${service_name} -n 100 查看日志"

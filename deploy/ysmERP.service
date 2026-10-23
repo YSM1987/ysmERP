@@ -13,10 +13,10 @@ Type=simple
 User=ysmERP
 Group=ysmERP
 WorkingDirectory=/usr/local/ysmERP
-# ${JAVA_OPTS} 来自 /etc/default/ysmERP：
-# -Xms128m -Xmx512m -Xss512k 小堆+小栈、SerialGC（1核机最优吞吐/内存比）、
-# 元空间上限 160M、GC 日志轮转、禁用随机数阻塞
-ExecStart=/usr/bin/java ${JAVA_OPTS} -jar /usr/local/ysmERP/ysmERP.jar --spring.config.additional-location=file:/etc/ysmERP/application.yml
+# ${JAVA_OPTS} 来自 /etc/default/ysmERP。
+# 注意：这里必须写 $JAVA_OPTS（不能写 ${JAVA_OPTS}）——systemd 对 ${VAR} 只做整体替换不按空格拆分，
+# 会把整串 JVM 参数当成一个参数传给 java，导致 "Invalid initial heap size" 启动失败。
+ExecStart=/usr/bin/java $JAVA_OPTS -jar /usr/local/ysmERP/ysmERP.jar --spring.config.additional-location=file:/etc/ysmERP/application.yml
 Restart=on-failure
 RestartSec=5s
 

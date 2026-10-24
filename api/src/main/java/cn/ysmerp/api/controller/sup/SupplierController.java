@@ -57,10 +57,18 @@ public class SupplierController extends BaseController {
      */
     @PostMapping
     public AjaxResult add(@RequestBody ErpSupplier scmSupplier) {
-        if (scmSupplier.getMerchantId() == null) return AjaxResult.error("请选择商户");
+        if (scmSupplier.getName() == null || scmSupplier.getName().trim().isEmpty())
+            return AjaxResult.error("供应商名称不能为空");
+        if (scmSupplier.getNumber() == null || scmSupplier.getNumber().trim().isEmpty())
+            return AjaxResult.error("供应商编码不能为空");
+        // 未指定商户时按总部自营处理，避免因缺少 merchantId 直接新增失败
+        if (scmSupplier.getMerchantId() == null)
+            scmSupplier.setMerchantId(0L);
+        scmSupplier.setCreateBy(getUsername());
         scmSupplier.setCreateTime(new Date());
         scmSupplier.setIsDelete(0);
-        return toAjax(supplierService.save(scmSupplier));
+        boolean saved = supplierService.save(scmSupplier);
+        return saved ? AjaxResult.success("新增成功") : AjaxResult.error("新增失败，请重试");
     }
 
     /**

@@ -37,6 +37,8 @@ public class ErpSupplierServiceImpl extends ServiceImpl<ErpSupplierMapper, ErpSu
         queryWrapper.like(StringUtils.hasText(bo.getName()), ErpSupplier::getName, bo.getName());
         queryWrapper.like(StringUtils.hasText(bo.getNumber()), ErpSupplier::getNumber, bo.getNumber());
         queryWrapper.like(StringUtils.hasText(bo.getLinkMan()), ErpSupplier::getLinkMan, bo.getLinkMan());
+        // 默认按主键倒序，保证新增数据出现在第一页
+        queryWrapper.orderByDesc(ErpSupplier::getId);
 
         Page<ErpSupplier> pages = mapper.selectPage(pageQuery.build(), queryWrapper);
 

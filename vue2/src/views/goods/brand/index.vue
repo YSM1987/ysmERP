@@ -240,6 +240,8 @@ export default {
             addBrand(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
+              // 新增后回到第一页，避免停留在旧页码看不到新数据
+              this.queryParams.pageNum = 1;
               this.getList();
             });
           }

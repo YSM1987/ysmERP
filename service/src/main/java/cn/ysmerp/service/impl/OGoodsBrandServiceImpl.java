@@ -29,6 +29,8 @@ public class OGoodsBrandServiceImpl extends ServiceImpl<OGoodsBrandMapper, OGood
         LambdaQueryWrapper<OGoodsBrand> queryWrapper = new LambdaQueryWrapper<OGoodsBrand>();
 
         queryWrapper.like(StringUtils.hasText(bo.getName()), OGoodsBrand::getName, bo.getName());
+        // 默认按主键倒序，保证新增数据出现在第一页
+        queryWrapper.orderByDesc(OGoodsBrand::getId);
         Page<OGoodsBrand> pages = mapper.selectPage(pageQuery.build(), queryWrapper);
 
         return PageResult.build(pages);

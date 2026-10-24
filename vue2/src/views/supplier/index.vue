@@ -166,6 +166,17 @@
         <el-form-item :label="$t('system.vendor.code')" prop="number">
           <el-input v-model="form.number" :placeholder="$t('system.vendor.inputCode')" style="width: 230px" />
         </el-form-item>
+        <el-form-item label="所属商户" prop="merchantId">
+          <el-select v-model="form.merchantId" clearable placeholder="请选择商户" style="width: 230px">
+            <el-option label="总部自营" :value="0"></el-option>
+            <el-option
+              v-for="item in merchantList"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="是否支持订单代发" prop="isShipper">
           <el-select v-model="form.isShipper" clearable  placeholder="是否支持订单代发" @change="handleQuery">
             <el-option label="支持订单代发" value="1"></el-option>
@@ -384,6 +395,7 @@ export default {
         purchaserName: null,
         createTime: null,
         isShipper: null,
+        merchantId: 0,
         loginName:null,
         loginPwd:null
       };
@@ -457,12 +469,15 @@ export default {
             updateSupplier(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
+              this.queryParams.pageNum = 1;
               this.getList();
             });
           } else {
             addSupplier(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
+              // 新增后回到第一页，避免停留在旧页码看不到新数据
+              this.queryParams.pageNum = 1;
               this.getList();
             });
           }

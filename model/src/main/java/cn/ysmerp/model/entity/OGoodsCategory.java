@@ -79,5 +79,10 @@ public class OGoodsCategory implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 商户ID
+     */
+    private Long merchantId;
+
     private static final long serialVersionUID = 1L;
 }

@@ -36,6 +36,13 @@ public class OGoodsCategoryServiceImpl extends ServiceImpl<OGoodsCategoryMapper,
         if(category.getParentId()==null){
             category.setParentId(0L);
         }
+        // o_goods_category.merchant_id 为 NOT NULL 且无默认值，未传时按总部（0）处理
+        if(category.getMerchantId()==null){
+            category.setMerchantId(0L);
+        }
+        if(category.getPath()==null){
+            category.setPath("");
+        }
         category.setCreateTime(new Date());
         category.setIsdelete(0);
         oGoodsCategoryMapper.insert(category);

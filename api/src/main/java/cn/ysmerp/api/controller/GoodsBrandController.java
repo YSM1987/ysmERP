@@ -40,6 +40,14 @@ public class GoodsBrandController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody OGoodsBrand erpGoodsBrand)
     {
+        if (erpGoodsBrand.getName() == null || erpGoodsBrand.getName().trim().isEmpty())
+        {
+            return error("品牌名不能为空");
+        }
+        if (erpGoodsBrand.getNum() == null || erpGoodsBrand.getNum().trim().isEmpty())
+        {
+            return error("品牌编码不能为空");
+        }
         erpGoodsBrand.setStatus(1);
         erpGoodsBrand.setCreateBy(getUsername());
         erpGoodsBrand.setCreateTime(new Date());

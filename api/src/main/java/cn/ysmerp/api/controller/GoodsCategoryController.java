@@ -42,6 +42,14 @@ public class GoodsCategoryController  extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody OGoodsCategory category)
     {
+        if (category.getName() == null || category.getName().trim().isEmpty())
+        {
+            return error("分类名称不能为空");
+        }
+        if (category.getNumber() == null || category.getNumber().trim().isEmpty())
+        {
+            return error("分类编码不能为空");
+        }
         category.setCreateBy(getUsername());
         categoryService.addCategory(category);
         return toAjax(1);

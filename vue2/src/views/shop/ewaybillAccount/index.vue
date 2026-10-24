@@ -375,7 +375,9 @@ export default {
       if (this.merchantList.length > 0) {
         this.queryParams.merchantId = this.merchantList[0].id
       }
-      if(resp.rows.length === 1&&resp.rows[0].id>0) {
+      // list_all 返回的是 data 数组，没有 rows 字段，直接读 rows 会抛错并中断后续 listShop 调用
+      const merchantRows = resp.data || resp.rows || []
+      if (merchantRows.filter(item => item.id > 0).length === 1) {
         this.isMerchant = true;
       }
       listShop({ merchantId: this.queryParams.merchantId,type:this.shopType}).then(response => {

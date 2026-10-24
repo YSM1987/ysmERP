@@ -100,6 +100,11 @@ public class SysUserController extends BaseController
             return error("新增用户'" + user.getUserName() + "'失败，邮箱账号已存在");
         }
         user.setCreateBy(getUsername());
+        // sys_user.user_type 为 NOT NULL 且无默认值，用户管理页新增的是系统用户
+        if (StringUtils.isEmpty(user.getUserType()))
+        {
+            user.setUserType("00");
+        }
         user.setPassword(SecurityUtils.encryptPassword(user.getPassword()));
         return toAjax(userService.insertUser(user));
     }

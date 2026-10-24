@@ -492,6 +492,7 @@ export default {
       this.form = {
         userId: undefined,
         deptId: undefined,
+        userType: "00",
         userName: undefined,
         nickName: undefined,
         password: undefined,

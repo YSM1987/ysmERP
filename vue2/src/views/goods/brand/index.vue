@@ -185,6 +185,7 @@ export default {
       this.form = {
         id: null,
         name: null,
+        num: null,
         status: null,
         createBy: null,
         createTime: null,

@@ -25,6 +25,11 @@ public class OGoodsBrand implements Serializable {
     private String name;
 
     /**
+     * 品牌编码
+     */
+    private String num;
+
+    /**
      * 状态
      */
     private Integer status;

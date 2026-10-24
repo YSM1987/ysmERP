@@ -128,6 +128,9 @@ public class OGoodsServiceImpl extends ServiceImpl<OGoodsMapper, OGoods>
         goods.setProvince(bo.getProvince());
         goods.setCity(bo.getCity());
         goods.setTown(bo.getTown());
+        // o_goods.ship_type / merchant_id 为 NOT NULL 且无默认值，页面新增的商品默认自营、归属总部
+        goods.setShipType(10);
+        goods.setMerchantId(0L);
 
         // 1、添加主表o_goods
         goodsMapper.insert(goods);

@@ -206,6 +206,16 @@ public class OGoods implements Serializable {
      */
     private Date updateTime;
 
+    /**
+     * 发货类型10自营发货20供应商发货
+     */
+    private Integer shipType;
+
+    /**
+     * 商户ID
+     */
+    private Long merchantId;
+
     @TableField(exist = false)
     private List<OGoodsSku> skuList;
 

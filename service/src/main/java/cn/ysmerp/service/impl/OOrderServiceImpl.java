@@ -276,6 +276,9 @@ public class OOrderServiceImpl extends ServiceImpl<OOrderMapper, OOrder>
         // 添加发货记录
         OShipment oShipment = new OShipment();
         oShipment.setShipper(0);//发货方 0 仓库发货 1 供应商发货
+        // o_shipment.shipper_id / merchant_id 为 NOT NULL 且无默认值
+        oShipment.setShipperId(0L);
+        oShipment.setMerchantId(erpOrder.getMerchantId() == null ? 0L : erpOrder.getMerchantId());
         oShipment.setShopId(erpOrder.getShopId());
         oShipment.setShopType(erpOrder.getShopType());
         oShipment.setOrderId(Long.parseLong(erpOrder.getId()));

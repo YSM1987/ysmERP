@@ -56,6 +56,16 @@ public class OShipment implements Serializable {
     private Integer shipper;
 
     /**
+     * 发货人ID
+     */
+    private Long shipperId;
+
+    /**
+     * 商户ID
+     */
+    private Long merchantId;
+
+    /**
      * 供应商ID
      */
     private Long supplierId;
